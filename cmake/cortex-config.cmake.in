@@ -1,0 +1,31 @@
+# CortexLLM Configuration
+set(CORTEX_VERSION           @CORTEX_INSTALL_VERSION@)
+set(CORTEX_BUILD_NUMBER      @CORTEX_BUILD_NUMBER@)
+set(CORTEX_BUILD_COMMIT      @CORTEX_BUILD_COMMIT@)
+set(CORTEX_SHARED_LIB        @BUILD_SHARED_LIBS@)
+
+@PACKAGE_INIT@
+
+set_and_check(CORTEX_INCLUDE_DIR "@PACKAGE_CORTEX_INCLUDE_INSTALL_DIR@")
+set_and_check(CORTEX_LIB_DIR     "@PACKAGE_CORTEX_LIB_INSTALL_DIR@")
+set_and_check(CORTEX_BIN_DIR     "@PACKAGE_CORTEX_BIN_INSTALL_DIR@")
+
+find_package(ggml REQUIRED HINTS ${CORTEX_LIB_DIR}/cmake)
+
+find_library(cortex_utils_LIBRARY cortex_utils
+    REQUIRED
+    HINTS ${CORTEX_LIB_DIR}
+    NO_CMAKE_FIND_ROOT_PATH
+)
+
+add_library(cortex_utils UNKNOWN IMPORTED)
+set_target_properties(cortex_utils
+    PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${CORTEX_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "ggml::ggml"
+        IMPORTED_LINK_INTERFACE_LANGUAGES "CXX"
+        IMPORTED_LOCATION "${cortex_utils_LIBRARY}"
+        INTERFACE_COMPILE_FEATURES cxx_std_11
+        POSITION_INDEPENDENT_CODE ON)
+
+check_required_components(CortexLLM)
